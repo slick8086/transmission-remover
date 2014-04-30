@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import transmissionrpc
 import time
 import logging
