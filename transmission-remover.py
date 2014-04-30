@@ -1,21 +1,26 @@
-#!/usr/bin/env python
-
 import transmissionrpc
-import logging
 import time
+import logging
+from configobj import ConfigObj
+from getpass import getuser
+from os.path import expanduser
 
-# Edit config veriables below
 
-TRANS_HOST = 'xxx.xxx.xxx.xxx'  # The host transmission is running on
-TRANS_PORT = '9091' # The port the host is listening on
-TRANS_USER =  'USER'    # The user id you have set
-TRANS_PW = 'PASS'   # the password you have set
-HASH_FILE = '/path/to/hash/file' # important file must exist, put the hashes of the file you want this program to completely ignore here
-                                 # each on a separate line.(will change in the future to be in the config file)
-LOG_FILE = '/path/to/log/file'   # the log file is written when something is removed
-keepForDays = 2.5 # how long to keep torrents for in days (float)
+userdir = getuser()+"/.config/torrent-remover/"
+cfgdir = expanduser('~'+userdir)
+cfgFile = cfgdir + 'config.ini'
 
-# no more config variables
+cfg = ConfigObj(cfgFile)
+
+HASH_FILE = cfg['HASH_FILE']
+LOG_FILE = cfg['LOG_FILE']
+keepForDays = float(cfg['SEED_FOR'])
+
+conn = cfg['connection']
+TRANS_HOST = conn['TRANS_HOST']
+TRANS_PORT = conn['TRANS_PORT']
+TRANS_USER = conn['TRANS_USER']
+TRANS_PASS = conn['TRANS_PASS']
 
 def loadHashesFromFile(infile):
     '''Loads hashes from a file.  These hashes will be for torrents to 
@@ -40,7 +45,7 @@ def mkTime(seconds):
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M', filename=LOG_FILE, level=logging.INFO)
 
-tc = transmissionrpc.Client(TRANS_HOST, TRANS_PORT, TRANS_USER, TRANS_PW)
+tc = transmissionrpc.Client(TRANS_HOST, TRANS_PORT, TRANS_USER, TRANS_PASS)
 
 keep_hashes = loadHashesFromFile(HASH_FILE)
     
@@ -51,6 +56,8 @@ del_hashes = [ x for x in all_hashes if x not in keep_hashes ]
 keepForSecs = int(keepForDays * 86400) # don't change this.
 
 for torrent in tc.get_torrents(del_hashes):
+	if torrent.doneDate == 0:
+		continue
     delDate = torrent.doneDate + keepForSecs
     now = int(time.time())
     age = mkTime(now - torrent.doneDate)
