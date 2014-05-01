@@ -16,6 +16,7 @@ cfg = ConfigObj(cfgFile)
 
 HASH_FILE = cfg['HASH_FILE']
 LOG_FILE = cfg['LOG_FILE']
+delData = cfg['DELETE_DATA']
 keepForDays = float(cfg['SEED_FOR'])
 
 conn = cfg['connection']
@@ -66,4 +67,4 @@ for torrent in tc.get_torrents(del_hashes):
 	age = mkTime(now - torrent.doneDate)
 	if now > delDate:
 	    logging.info('    remover       external        Seeded for %s, removing torrent %s', age, torrent.name)
-	    tc.remove_torrent(torrent.hashString)
+	    tc.remove_torrent(torrent.hashString, delData)
