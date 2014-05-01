@@ -8,7 +8,7 @@ from getpass import getuser
 from os.path import expanduser
 
 
-userdir = getuser()+"/.config/torrent-remover/"
+userdir = getuser()+"/.config/transmission-remover/"
 cfgdir = expanduser('~'+userdir)
 cfgFile = cfgdir + 'config.ini'
 
@@ -60,9 +60,10 @@ keepForSecs = int(keepForDays * 86400) # don't change this.
 for torrent in tc.get_torrents(del_hashes):
 	if torrent.doneDate == 0:
 		continue
-    delDate = torrent.doneDate + keepForSecs
-    now = int(time.time())
-    age = mkTime(now - torrent.doneDate)
-    if now > delDate:
-        logging.info('    remover       external        Seeded for %s, removing torrent %s', age, torrent.name)
-        tc.remove_torrent(torrent.hashString)
+	
+        delDate = torrent.doneDate + keepForSecs
+	now = int(time.time())
+	age = mkTime(now - torrent.doneDate)
+	if now > delDate:
+	    logging.info('    remover       external        Seeded for %s, removing torrent %s', age, torrent.name)
+	    tc.remove_torrent(torrent.hashString)
